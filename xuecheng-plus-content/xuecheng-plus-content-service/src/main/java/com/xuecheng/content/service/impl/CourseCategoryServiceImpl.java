@@ -23,6 +23,9 @@ public class CourseCategoryServiceImpl implements CourseCategoryService {
     @Resource
     CourseCategoryMapper courseCategoryMapper;
 
+    /** 将查询结果先找出一级节点，然后将该节点的子节点放入该节点的childrenTreeNodes属性中（是一个list）
+     *
+     */
     @Override
     public List<CourseCategoryTreeDto> queryTreeNode(String id) {
         //调用mapper递归查询出分类信息
@@ -44,8 +47,14 @@ public class CourseCategoryServiceImpl implements CourseCategoryService {
          * filter(item ->!id.equals(item.getId()))：排除根节点
          */
         queryResult.stream().filter(item ->!id.equals(item.getId())).forEach(item -> {
-            //向List中写入元素
-            //写入的条件：当期节点的父节点就是查询的节点
+            /**
+             * 向结果集中写入元素
+             * 写入的条件：当期节点的父节点就是查询的节点（一级节点写入）
+             * 作用：排除二级节点以外的节点，
+             *  如：查询id = 1 ，
+             *      1-1 的 parentId = 1 写入结果集，
+             *      1-1-1 的parentId = 1-1 不写入（该节点要作为属性写入 1-1的 childrenTreeNodes属性中）
+             */
             if (item.getParentid().equals(id)){
                 returnList.add(item);
             }
@@ -53,7 +62,10 @@ public class CourseCategoryServiceImpl implements CourseCategoryService {
             CourseCategoryTreeDto courseCategoryParent = map.get(item.getParentid());
             //存在父节点
             if(courseCategoryParent != null) {
-                //如果此父节点的childrenTreeNodes为空，要new一个集合赋值给他，为了要向该集合中放它的子节点
+                /**
+                 * 如果此父节点的childrenTreeNodes为空（还没有放过子节点），
+                 * 要 new一个集合来存放子节点
+                 */
                 if (courseCategoryParent.getChildrenTreeNodes() == null) {
                     courseCategoryParent.setChildrenTreeNodes(new ArrayList<CourseCategoryTreeDto>());
                 }
