@@ -45,6 +45,7 @@ public class AddCourseDto {
  @ApiModelProperty(value = "教学模式（普通，录播，直播等）", required = true)
  private String teachmode;
 
+ @Size(message = "课程描述内容过少",min = 10)
  @ApiModelProperty(value = "课程介绍")
  private String description;
 
@@ -59,7 +60,6 @@ public class AddCourseDto {
  private Float price;
  @ApiModelProperty(value = "原价")
  private Float originalPrice;
-
 
  @ApiModelProperty(value = "qq")
  private String qq;

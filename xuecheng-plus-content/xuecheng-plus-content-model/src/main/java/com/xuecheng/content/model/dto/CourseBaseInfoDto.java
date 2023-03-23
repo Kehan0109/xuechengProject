@@ -1,7 +1,7 @@
 package com.xuecheng.content.model.dto;
 
+
 import com.xuecheng.content.model.po.CourseBase;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;

@@ -1,0 +1,26 @@
+package com.xuecheng.base.exception;
+
+import java.io.Serializable;
+
+/**
+ * @author Ke_han
+ * @creat 2023-03-23 19:48
+ * @description 和前端约定返回的异常信息模型
+ */
+public class RestErrorResponse implements Serializable {
+
+    private String errMessage;
+
+    public RestErrorResponse(String errMessage) {
+        this.errMessage = errMessage;
+    }
+
+    public String getErrMessage() {
+        return errMessage;
+    }
+
+    public void setErrMessage(String errMessage) {
+        this.errMessage = errMessage;
+    }
+}
+

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.databind.util.BeanUtil;
+import com.xuecheng.base.exception.XueChengPlusException;
 import com.xuecheng.base.model.PageParams;
 import com.xuecheng.base.model.PageResult;
 import com.xuecheng.content.mapper.CourseBaseMapper;
@@ -110,27 +111,28 @@ public class CourseBaseInfoServiceImpl implements CourseBaseInfoService {
     public CourseBaseInfoDto createCourseBase(Long companyId, AddCourseDto addCourseDto) {
 
         //mind ①参数的合法性校验
-        if (StringUtils.isBlank(addCourseDto.getName())) {
-            throw new RuntimeException("课程名称为空");
-        }
-        if (StringUtils.isBlank(addCourseDto.getUsers())) {
-            throw new RuntimeException("适用人群为空");
-        }
-        if (StringUtils.isBlank(addCourseDto.getMt())) {
-            throw new RuntimeException("课程分类为空");
-        }
-        if (StringUtils.isBlank(addCourseDto.getSt())) {
-            throw new RuntimeException("课程分类为空");
-        }
-        if (StringUtils.isBlank(addCourseDto.getGrade())) {
-            throw new RuntimeException("课程等级为空");
-        }
-        if (StringUtils.isBlank(addCourseDto.getCharge())) {
-            throw new RuntimeException("收费规则为空");
-        }
-        if (StringUtils.isBlank(addCourseDto.getTeachmode())) {
-            throw new RuntimeException("教育模式为空");
-        }
+//        if (StringUtils.isBlank(addCourseDto.getName())) {
+////            throw new RuntimeException("课程名称为空");
+//            XueChengPlusException.cast("课程名称为空");
+//        }
+//        if (StringUtils.isBlank(addCourseDto.getUsers())) {
+//            throw new RuntimeException("适用人群为空");
+//        }
+//        if (StringUtils.isBlank(addCourseDto.getMt())) {
+//            throw new RuntimeException("课程分类为空");
+//        }
+//        if (StringUtils.isBlank(addCourseDto.getSt())) {
+//            throw new RuntimeException("课程分类为空");
+//        }
+//        if (StringUtils.isBlank(addCourseDto.getGrade())) {
+//            throw new RuntimeException("课程等级为空");
+//        }
+//        if (StringUtils.isBlank(addCourseDto.getCharge())) {
+//            throw new RuntimeException("收费规则为空");
+//        }
+//        if (StringUtils.isBlank(addCourseDto.getTeachmode())) {
+//            throw new RuntimeException("教育模式为空");
+//        }
 
         //mind ② 向课程基本信息表course_base表写入数据
         CourseBase courseBase = new CourseBase();
@@ -202,21 +204,16 @@ public class CourseBaseInfoServiceImpl implements CourseBaseInfoService {
             int insert = courseMarketMapper.insert(courseMarket);
             return insert;
 
-
         } else {
             /**数据存在：则更新
              * 查询结果：courseMarketResult，
              * 更新数据：courseMarket
-             * 方法：由于已经查到数据库存在该主键的信息，
-             *      执行更新操作时，既要将不改动的值传入，也要将新值更新，
-             *      所以需要使用copy将新值覆盖老值，老值保存，
-             *      由于经过了校验，更新数据除主键外各项合法，所以要手动设置主键
+             * 方法：由于传入进来的courseMarket可能为 null，所以要将courseMarket的属性 copy到 courseMarketResult中
              */
             BeanUtils.copyProperties(courseMarket, courseMarketResult);
-            courseMarketResult.setId(courseMarket.getId());
+//            courseMarketResult.setId(courseMarket.getId());
             //更新
             int i = courseMarketMapper.updateById(courseMarketResult);
-            courseMarketMapper.updateById(courseMarket);
             return i;
 
         }
@@ -236,13 +233,12 @@ public class CourseBaseInfoServiceImpl implements CourseBaseInfoService {
         //组装成CourseBaseInfoDto
         CourseBaseInfoDto courseBaseInfoDto = new CourseBaseInfoDto();
         BeanUtils.copyProperties(courseBase, courseBaseInfoDto);
-        BeanUtils.copyProperties(courseMarket, courseBaseInfoDto);
+        if(courseMarket!=null){
+            BeanUtils.copyProperties(courseMarket, courseBaseInfoDto);
+        }
         //通过courseCategoryMapper查询分类信息，然后设置到courseBaseInfoDto中
-        //设置查询参数
-        QueryWrapper<CourseCategory> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("parientid", courseBase.getMt());
         //查询
-        CourseCategory mt = courseCategoryMapper.selectOne(queryWrapper);
+        CourseCategory mt = courseCategoryMapper.selectById(courseBase.getMt());
         //设置mt的name
         courseBaseInfoDto.setMtName(mt.getName());
         //查询小分类st

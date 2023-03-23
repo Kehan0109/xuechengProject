@@ -10,7 +10,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  * @creat 2023-03-22 17:14
  * @description 内容管理服务的启动类
  */
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.xuecheng")
 @EnableSwagger2Doc  //生成Swagger接口文档
 public class ContentApplication {
     public static void main(String[] args) {
