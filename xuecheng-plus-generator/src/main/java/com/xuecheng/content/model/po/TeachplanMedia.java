@@ -11,7 +11,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author itcast
@@ -21,7 +21,6 @@ import com.baomidou.mybatisplus.annotation.TableName;
 public class TeachplanMedia implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
     /**
      * 主键
      */

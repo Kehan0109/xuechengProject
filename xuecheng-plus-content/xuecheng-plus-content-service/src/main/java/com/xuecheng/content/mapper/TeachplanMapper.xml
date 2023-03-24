@@ -27,4 +27,73 @@
         id, pname, parentid, grade, media_type, start_time, end_time, description, timelength, orderby, course_id, course_pub_id, status, is_preview, create_date, change_date
     </sql>
 
+    <resultMap id="treeNodeResultMap" type="com.xuecheng.content.model.dto.TeachplanDto">
+        <!-- 一级数据映射 -->
+        <id column="t1_id" property="id"></id>
+        <result column="t1_paname" property="pname"></result>
+        <result column="t1_parentid" property="parentid"></result>
+        <result column="t1_grade" property="grade"></result>
+        <result column="t1_mediatype" property="mediaType"></result>
+        <result column="t1_startTime" property="stratTime"></result>
+        <result column="t1_endTime" property="endTime"></result>
+        <result column="t1_orderby" property="orderby"></result>
+        <result column="t1_courseId" property="courseId"></result>
+        <result column="t1_coursePubId" property="coursePubId"></result>
+        <!-- 映射子节点，可能包含多个，使用一对多映射 -->
+        <collection property="teachPlanTreeNodes" ofType="com.xuecheng.content.model.dto.TeachplanDto">
+            <id column="t2_id" property="id"></id>
+            <result column="t2_pname" property="pname"></result>
+            <result column="t2_parentid" property="parentid"></result>
+            <result column="t2_grade" property="grade"></result>
+            <result column="t2_mediaType" property="mediaType"></result>
+            <result column="t2_stratTime" property="stratTime"></result>
+            <result column="t2_endTime" property="endTime"></result>
+            <result column="t2_orderby" property="orderby"></result>
+            <result column="t2_courseId" property="courseId"></result>
+            <result column="t2_coursePubId" property="coursePubId"></result>
+            <!-- 一对一的映射媒资关联信息 -->
+            <association property="teachplanMedia" javaType="com.xuecheng.content.model.po.TeachplanMedia">
+                <id column="teachplanMediaId" property="id"></id>
+                <result column="mediaFilename" property="mediaFilename"></result>
+                <result column="mediaId" property="mediaId"></result>
+                <result column="t2_id" property="teachplanId"></result>
+                <result column="t2_courseId" property="courseId"></result>
+            </association>
+        </collection>
+    </resultMap>
+    <!-- List<TeachplanDto> selectTreeNodes(Long courseId); -->
+    <select id="selectTreeNodes" parameterType="long" resultMap="treeNodeResultMap">
+        SELECT
+            t1.id t1_id,
+            t1.pname t1_paname,
+            t1.parentid t1_parentid,
+            t1.grade t1_grade,
+            t1.media_type t1_mediatype,
+            t1.start_time t1_startTime,
+            t1.end_time t1_endTime,
+            t1.orderby t1_orderby,
+            t1.course_id t1_courseId,
+            t1.course_pub_id t1_coursePubId,
+
+            t2.id             t2_id,
+            t2.pname          t2_pname,
+            t2.parentid       t2_parentid,
+            t2.grade          t2_grade,
+            t2.media_type     t2_mediaType,
+            t2.start_time     t2_stratTime,
+            t2.end_time       t2_endTime,
+            t2.orderby        t2_orderby,
+            t2.course_id      t2_courseId,
+            t2.course_pub_id  t2_coursePubId,
+
+            t3.media_fileName mediaFilename,
+            t3.id teachplanMediaId,
+            t3.media_id mediaId
+        FROM teachplan t1 LEFT JOIN teachplan t2 ON t1.id = t2.parentid
+                          LEFT JOIN teachplan_media t3 ON t3.teachplan_id = t2.id
+        WHERE t1.parentid = 0 AND t1.course_id = #{id}
+        ORDER BY t1.orderby,t2.orderby
+    </select>
+
+
 </mapper>
