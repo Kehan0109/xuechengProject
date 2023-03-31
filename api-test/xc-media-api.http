@@ -1,0 +1,9 @@
+### 上传文件
+POST {{media_host}}/media/upload/coursefile
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="filedata"; filename="wallhaven-85ggj1.png"
+Content-Type: application/octet-stream
+
+< C:/Users/豚豚/Pictures/壁纸/wallhaven-85ggj1.png

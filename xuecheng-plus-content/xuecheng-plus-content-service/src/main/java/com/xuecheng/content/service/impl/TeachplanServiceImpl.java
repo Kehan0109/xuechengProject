@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xuecheng.base.exception.XueChengPlusException;
 import com.xuecheng.content.mapper.TeachplanMapper;
 import com.xuecheng.content.mapper.TeachplanMediaMapper;
+import com.xuecheng.content.model.dto.BindTeachplanMediaDto;
 import com.xuecheng.content.model.dto.SaveTeachplanDto;
 import com.xuecheng.content.model.dto.TeachplanDto;
 import com.xuecheng.content.model.po.Teachplan;
@@ -66,7 +67,7 @@ public class TeachplanServiceImpl implements TeachplanService {
             Long courseId = saveTeachplanDto.getCourseId();
             Long parentId = saveTeachplanDto.getParentid();
             int orderBy = getTeachplanCount(courseId, parentId);
-            teachplan.setOrderby(orderBy);
+            teachplan.setOrderby(orderBy+1);
             teachplanMapper.insert(teachplan);
             //更新新数据
             teachplanMapper.selectById(teachplanId);
@@ -167,6 +168,65 @@ public class TeachplanServiceImpl implements TeachplanService {
             teachplanMapper.updateById(teachplanDown);
             //排第一个的数据不做操作
         }
+    }
+
+    /**
+     * 向上移动课程计划
+     * @param id
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void moveUpTeachplan(Long id) {
+        Teachplan teachplan = teachplanMapper.selectById(id);
+        Long parentid = teachplan.getParentid();
+        Long courseId = teachplan.getCourseId();
+        Integer orderby = teachplan.getOrderby();
+        //如果orderby - 1 存在 说明不是第一条数据，如果不存在则是
+        QueryWrapper<Teachplan> queryWrapper = new QueryWrapper<>();
+        queryWrapper
+                .eq("parentid",parentid)
+                .and(wq -> wq.eq("course_id",courseId))
+                .and(wq -> wq.eq("orderby",(orderby-1)));
+        Teachplan teachplanOld = teachplanMapper.selectOne(queryWrapper);
+        if(teachplanOld == null){
+            XueChengPlusException.cast("本条数据是第一条数据，无法向上移动");
+        }else {
+            //先将上面的数据向下移动
+            teachplanOld.setOrderby(orderby);
+            teachplanMapper.updateById(teachplanOld);
+            //再将下面的数据向上移动
+            teachplan.setOrderby(orderby-1);
+            teachplanMapper.updateById(teachplan);
+        }
+
+    }
+
+    //绑定媒资信息
+    @Transactional
+    @Override
+    public void associationMedia(BindTeachplanMediaDto bindTeachplanMediaDto) {
+
+        Long teachplanId = bindTeachplanMediaDto.getTeachplanId();
+        Teachplan teachplan = teachplanMapper.selectById(teachplanId);
+        if(teachplan == null){
+            XueChengPlusException.cast("课程计划不存在");
+        }
+
+        //删除原有绑定媒资记录，根据课程计划的id删除绑定的媒资
+        LambdaQueryWrapper<TeachplanMedia> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(TeachplanMedia::getTeachplanId,bindTeachplanMediaDto.getTeachplanId());
+        //删除原有的记录
+        teachplanMediaMapper.delete(queryWrapper);
+
+        //添加新的
+        TeachplanMedia teachplanMedia = new TeachplanMedia();
+        BeanUtils.copyProperties(bindTeachplanMediaDto,teachplanMedia);
+        //设置course_id
+        teachplanMedia.setCourseId(teachplan.getCourseId());
+        //设置MediaFileName
+        teachplanMedia.setMediaFilename(bindTeachplanMediaDto.getFileName());
+        teachplanMediaMapper.insert(teachplanMedia);
+
     }
 
     /**

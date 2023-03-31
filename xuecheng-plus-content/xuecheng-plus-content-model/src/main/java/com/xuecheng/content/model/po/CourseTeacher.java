@@ -1,8 +1,11 @@
 package com.xuecheng.content.model.po;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.xuecheng.base.exception.ValidationGroups;
 import lombok.Data;
+import org.springframework.validation.annotation.Validated;
 
+import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -33,11 +36,13 @@ public class CourseTeacher implements Serializable {
     /**
      * 教师标识
      */
+    @NotEmpty(message = "新增教师姓名不能为空",groups = {ValidationGroups.Update.class})
     private String teacherName;
 
     /**
      * 教师职位
      */
+    @NotEmpty(message = "新增教师职位不能为空",groups = {ValidationGroups.Insert.class})
     private String position;
 
     /**
